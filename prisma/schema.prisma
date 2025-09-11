@@ -1,0 +1,164 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// ENUM TYPES
+// ================================
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING     // Menunggu konfirmasi
+  CONFIRMED   // Dikonfirmasi admin
+  PROCESSING  // Sedang diproses
+  SHIPPED     // Sudah dikirim
+  DELIVERED   // Sudah sampai
+  CANCELLED   // Dibatalkan
+}
+
+enum PaymentStatus {
+  PENDING   // Menunggu pembayaran
+  PAID      // Sudah dibayar
+  FAILED    // Pembayaran gagal
+  REFUNDED  // Sudah refund
+}
+
+// ================================
+// MAIN MODELS
+// ================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String?
+  role          UserRole  @default(CUSTOMER)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  orders Order[] // User bisa punya banyak orders
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique // Abaya, Hijab, Al-Qur'an, dll
+  slug        String   @unique // abaya, hijab, al-quran
+  description String?
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products Product[] // Category bisa punya banyak products
+
+  @@map("categories")
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String   // Abaya Premium Dubai
+  description   String   @db.Text // Deskripsi panjang
+  price         Float    // Harga dalam Rupiah
+  discountPrice Float?   // Harga diskon (optional)
+  images        String[] // Array URL gambar
+  slug          String   @unique // abaya-premium-dubai
+  stock         Int      @default(0) // Total stok
+  weight        Float?   // Berat untuk ongkir (gram)
+  isActive      Boolean  @default(true)
+  isFeatured    Boolean  @default(false) // Produk unggulan
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Foreign Keys
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // Relations
+  variants   ProductVariant[] // Product bisa punya banyak variants
+  orderItems OrderItem[]      // Product bisa ada di banyak order items
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id              String  @id @default(cuid())
+  size            String? // S, M, L, XL, XXL
+  color           String? // Hitam, Navy, Maroon
+  stock           Int     @default(0) // Stok per varian
+  additionalPrice Float?  @default(0) // Tambahan harga
+  sku             String? @unique // Kode unik per varian
+  isActive        Boolean @default(true)
+
+  // Foreign Keys
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Relations
+  orderItems OrderItem[] // Variant bisa ada di banyak order items
+
+  @@map("product_variants")
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique // ORD-2024-001
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress Json          // Alamat lengkap sebagai JSON
+  subtotal        Float         // Total harga produk
+  shippingCost    Float         @default(0) // Ongkos kirim
+  totalAmount     Float         // subtotal + shippingCost
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?       // Bank Transfer, QRIS, dll
+  paymentProof    String?       // URL bukti transfer
+  trackingNumber  String?       // Resi pengiriman
+  notes           String?       // Catatan customer
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Foreign Keys (Optional - untuk customer yang login)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Relations
+  items OrderItem[] // Order punya banyak items
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  productName String  // Snapshot nama produk saat order
+  variantInfo String? // Snapshot info varian (size, color)
+  quantity    Int
+  price       Float   // Harga per item saat order
+  subtotal    Float   // quantity × price
+
+  // Foreign Keys
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@map("order_items")
+}
