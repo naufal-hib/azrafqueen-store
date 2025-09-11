@@ -20,6 +20,22 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    files: ["prisma/seed.ts"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off", // Allow unused vars in seed files
+    },
+  },
+  {
+    rules: {
+      "react/no-unescaped-entities": [
+        "error",
+        {
+          forbid: [">", "}"],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

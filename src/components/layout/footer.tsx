@@ -83,7 +83,7 @@ export function Footer() {
                   href="/category/buku-islam" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Buku & Al-Qur'an
+                  Buku & Al-Qur&apos;an
                 </Link>
               </li>
               <li>

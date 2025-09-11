@@ -78,6 +78,8 @@ async function main() {
       role: UserRole.ADMIN,
     },
   })
+  // Suppress unused variable warning for seed file
+  void adminUser
 
   console.log('✅ Admin user created')
 
@@ -130,6 +132,8 @@ async function main() {
       },
     },
   })
+  // Suppress unused variable warning for seed file
+  void abaya2
 
   // Hijab Products
   const hijab1 = await prisma.product.create({
@@ -178,6 +182,8 @@ async function main() {
       },
     },
   })
+  // Suppress unused variable warning for seed file
+  void pashmina1
 
   // Buku Products
   const quran1 = await prisma.product.create({
@@ -194,6 +200,8 @@ async function main() {
       categoryId: bukuCategory.id,
     },
   })
+  // Suppress unused variable warning for seed file
+  void quran1
 
   const bukuDoa = await prisma.product.create({
     data: {
@@ -209,6 +217,8 @@ async function main() {
       categoryId: bukuCategory.id,
     },
   })
+  // Suppress unused variable warning for seed file
+  void bukuDoa
 
   // Baju Anak
   const bajuAnak1 = await prisma.product.create({
@@ -233,6 +243,8 @@ async function main() {
       },
     },
   })
+  // Suppress unused variable warning for seed file
+  void bajuAnak1
 
   console.log('✅ Sample products created')
 
@@ -281,6 +293,8 @@ async function main() {
       },
     },
   })
+  // Suppress unused variable warning for seed file
+  void sampleOrder
 
   console.log('✅ Sample order created')
 
