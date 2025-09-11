@@ -1,3 +1,4 @@
+// src/components/layout/header.tsx
 "use client"
 
 import Link from "next/link"
@@ -20,6 +21,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { CartDrawer } from "@/components/cart/cart-drawer"
+import { useCartStore } from "@/store/cart-store"
 
 // Navigation links
 const navigation = [
@@ -35,14 +38,17 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   
-  // TODO: This will come from cart store later
-  const cartItemsCount = 0
+  // Get cart data from store
+  const { getCartSummary, toggleCart } = useCartStore()
+  const cartSummary = getCartSummary()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       // TODO: Navigate to search results
       console.log("Search:", searchQuery)
+      // For now, redirect to all products with search query
+      window.location.href = `/category?search=${encodeURIComponent(searchQuery)}`
     }
   }
 
@@ -57,7 +63,7 @@ export function Header() {
               <span className="text-sm font-bold">AQ</span>
             </div>
             <span className="hidden font-bold sm:inline-block">
-              {process.env.NEXT_PUBLIC_APP_NAME}
+              Azrafqueen Store
             </span>
           </Link>
         </div>
@@ -103,21 +109,23 @@ export function Header() {
             <span className="sr-only">Search</span>
           </Button>
 
-          {/* Cart */}
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/cart" className="relative">
+          {/* Cart with Drawer */}
+          <CartDrawer>
+            <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
+              {cartSummary.totalItems > 0 && (
                 <Badge
                   variant="destructive"
                   className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs"
                 >
-                  {cartItemsCount}
+                  {cartSummary.totalItems > 99 ? '99+' : cartSummary.totalItems}
                 </Badge>
               )}
-              <span className="sr-only">Cart</span>
-            </Link>
-          </Button>
+              <span className="sr-only">
+                Cart ({cartSummary.totalItems} items)
+              </span>
+            </Button>
+          </CartDrawer>
 
           {/* User Menu */}
           <DropdownMenu>
@@ -163,6 +171,26 @@ export function Header() {
                     {item.name}
                   </Link>
                 ))}
+                <div className="pt-4 border-t">
+                  <Link
+                    href="/admin"
+                    className="text-lg font-medium transition-colors hover:text-primary block py-2"
+                  >
+                    Admin Dashboard
+                  </Link>
+                  <Link
+                    href="/orders"
+                    className="text-lg font-medium transition-colors hover:text-primary block py-2"
+                  >
+                    Cek Pesanan
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="text-lg font-medium transition-colors hover:text-primary block py-2"
+                  >
+                    Kontak
+                  </Link>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>
