@@ -4,7 +4,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Minus, Plus, Trash2, ShoppingBag, X } from "lucide-react"
+import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
@@ -124,7 +124,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
 
 // Cart Item Component
 interface CartItemProps {
-  item: any // CartItem type from store
+  item: CartItem // Properly typed CartItem from store
   onUpdateQuantity: (itemId: string, quantity: number) => void
   onRemove: (itemId: string) => void
 }

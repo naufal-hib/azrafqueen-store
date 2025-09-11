@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useCartStore } from "@/store/cart-store"
 import { ProductVariant } from "./variant-selector"
+import { formatCurrency } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
 interface Product {
@@ -22,14 +23,12 @@ interface Product {
 interface AddToCartButtonProps {
   product: Product
   selectedVariant: ProductVariant | null
-  finalPrice: number
   className?: string
 }
 
 export function AddToCartButton({ 
   product, 
-  selectedVariant, 
-  finalPrice,
+  selectedVariant,
   className 
 }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(1)
@@ -45,10 +44,15 @@ export function AddToCartButton({
   const availableStock = selectedVariant ? selectedVariant.stock : product.stock
   const maxQuantity = Math.max(1, availableStock)
   
+  // Calculate current price based on variant
+  const currentPrice = selectedVariant 
+    ? product.price + selectedVariant.additionalPrice 
+    : product.price
+  
   // Check if product can be added to cart
   const canAddToCart = availableStock > 0 && quantity > 0 && quantity <= availableStock
 
-  // For products with variants, require variant selection
+  // For products with variants, require variant selection if variants exist
   const hasVariants = selectedVariant !== undefined // undefined means we haven't checked yet, null means no variants
   const requiresVariantSelection = hasVariants === undefined // Still loading variants
   
@@ -171,6 +175,18 @@ export function AddToCartButton({
           <span className="text-sm text-muted-foreground ml-2">
             {availableStock} available
           </span>
+        </div>
+      </div>
+
+      {/* Current Price Display */}
+      <div className="p-3 bg-muted/30 rounded-lg">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Unit Price:</span>
+          <span className="font-medium">{formatCurrency(currentPrice)}</span>
+        </div>
+        <div className="flex justify-between items-center font-semibold">
+          <span>Total:</span>
+          <span>{formatCurrency(currentPrice * quantity)}</span>
         </div>
       </div>
 

@@ -39,7 +39,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   
   // Get cart data from store
-  const { getCartSummary, toggleCart } = useCartStore()
+  const { getCartSummary } = useCartStore()
   const cartSummary = getCartSummary()
 
   const handleSearch = (e: React.FormEvent) => {

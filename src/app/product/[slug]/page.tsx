@@ -21,7 +21,6 @@ import { ProductGrid } from "@/components/product/product-grid"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatCurrency } from "@/lib/utils"
 import { ErrorComponent } from "@/components/layout/error"
@@ -240,7 +239,6 @@ export default function ProductDetailPage() {
             <AddToCartButton
               product={product}
               selectedVariant={selectedVariant}
-              finalPrice={finalPrice}
             />
 
             {/* Action Buttons */}
@@ -276,7 +274,7 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Product Details Tabs */}
-        <Card className="mb-12">
+        <div className="border rounded-lg">
           <Tabs defaultValue="description" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="description">Description</TabsTrigger>
@@ -346,7 +344,7 @@ export default function ProductDetailPage() {
               </div>
             </TabsContent>
           </Tabs>
-        </Card>
+        </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
