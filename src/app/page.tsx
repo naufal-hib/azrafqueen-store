@@ -1,11 +1,87 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowRight, ShoppingBag, Star, Users, Truck, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MainLayout } from "@/components/layout/main-layout"
+import { ProductGrid } from "@/components/product/product-grid"
+
+interface Product {
+  id: string
+  name: string
+  slug: string
+  price: number
+  discountPrice?: number
+  images: string[]
+  category: {
+    name: string
+    slug: string
+  }
+  isFeatured: boolean
+  stock: number
+}
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  _count: {
+    products: number
+  }
+}
 
 export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [loadingCategories, setLoadingCategories] = useState(true)
+
+  // Fetch featured products
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoadingProducts(true)
+        const response = await fetch('/api/products?featured=true&limit=8')
+        const result = await response.json()
+        
+        if (result.success) {
+          setFeaturedProducts(result.data.products)
+        }
+      } catch (error) {
+        console.error('Error fetching featured products:', error)
+      } finally {
+        setLoadingProducts(false)
+      }
+    }
+
+    fetchFeaturedProducts()
+  }, [])
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true)
+        const response = await fetch('/api/categories')
+        const result = await response.json()
+        
+        if (result.success) {
+          setCategories(result.data.categories)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      } finally {
+        setLoadingCategories(false)
+      }
+    }
+
+    fetchCategories()
+  }, [])
+
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -75,8 +151,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories Section */}
+      {/* Featured Products Section */}
       <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-12">
+            <Badge variant="outline" className="mb-2">Featured Products</Badge>
+            <h2 className="text-3xl font-bold lg:text-4xl">Produk Unggulan</h2>
+            <p className="text-muted-foreground lg:text-lg max-w-2xl mx-auto">
+              Produk pilihan terbaik dengan kualitas premium dan design yang elegan
+            </p>
+          </div>
+          
+          <ProductGrid
+            products={featuredProducts}
+            isLoading={loadingProducts}
+            emptyMessage="Belum ada produk unggulan saat ini"
+            className="mb-8"
+          />
+
+          {featuredProducts.length > 0 && (
+            <div className="text-center">
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/category">
+                  Lihat Semua Produk
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-12">
             <h2 className="text-3xl font-bold lg:text-4xl">Kategori Produk</h2>
@@ -86,81 +193,60 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Category Cards */}
-            {[
-              {
-                name: "Abaya & Gamis",
-                description: "Koleksi abaya dan gamis syari premium",
-                href: "/category/abaya",
-                badge: "Premium",
-                items: "45+ Produk"
-              },
-              {
-                name: "Hijab & Kerudung", 
-                description: "Beragam model hijab dan kerudung cantik",
-                href: "/category/hijab",
-                badge: "Terlaris",
-                items: "60+ Produk"
-              },
-              {
-                name: "Pashmina",
-                description: "Pashmina halus dan berkualitas tinggi",
-                href: "/category/pashmina", 
-                badge: "New",
-                items: "25+ Produk"
-              },
-              {
-                name: "Buku & Al-Qur'an",
-                description: "Al-Qur'an dan literatur Islami",
-                href: "/category/buku-islam",
-                badge: "Lengkap",
-                items: "30+ Produk"
-              },
-              {
-                name: "Baju Muslim Anak",
-                description: "Pakaian muslim untuk si buah hati",
-                href: "/category/baju-anak",
-                badge: "Lucu",
-                items: "20+ Produk"
-              },
-              {
-                name: "Aksesoris",
-                description: "Aksesoris pelengkap gaya Islami",
-                href: "/category/aksesoris",
-                badge: "Soon",
-                items: "Coming Soon"
-              }
-            ].map((category) => (
-              <Card key={category.name} className="group hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{category.name}</CardTitle>
-                    <Badge variant={category.badge === "Premium" ? "default" : "secondary"}>
-                      {category.badge}
-                    </Badge>
-                  </div>
-                  <CardDescription>{category.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{category.items}</span>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={category.href}>
-                        Lihat Semua
-                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {loadingCategories ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Card key={index} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-6 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-full"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {categories.map((category) => (
+                <Card key={category.id} className="group hover:shadow-lg transition-all duration-300">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{category.name}</CardTitle>
+                      <Badge variant="secondary">
+                        {category._count.products} Produk
+                      </Badge>
+                    </div>
+                    {category.description && (
+                      <CardDescription>{category.description}</CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {category._count.products === 0 
+                          ? 'Coming Soon' 
+                          : `${category._count.products} produk tersedia`
+                        }
+                      </span>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/category/${category.slug}`}>
+                          Lihat Semua
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-muted/50">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-12">
             <h2 className="text-3xl font-bold lg:text-4xl">Mengapa Pilih Azrafqueen?</h2>
