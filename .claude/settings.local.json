@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

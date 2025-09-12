@@ -108,6 +108,11 @@ export async function GET(request: NextRequest) {
               stock: true,
               additionalPrice: true,
             }
+          },
+          _count: {
+            select: {
+              variants: true
+            }
           }
         }
       }),

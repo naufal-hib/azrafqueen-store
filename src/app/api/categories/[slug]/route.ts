@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
   { params }: RouteParams
 ) {
   try {
-    const { slug } = params
+    const { slug } = await params
     const searchParams = request.nextUrl.searchParams
     
     // Query parameters
