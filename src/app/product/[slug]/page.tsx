@@ -1,8 +1,7 @@
 // src/app/product/[slug]/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { useState, useEffect, use } from "react"
 import Link from "next/link"
 import { 
   ChevronRight, 
@@ -25,6 +24,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatCurrency } from "@/lib/utils"
 import { ErrorComponent } from "@/components/layout/error"
 import { Skeleton } from "@/components/ui/skeleton"
+
+interface ProductDetailPageProps {
+  params: Promise<{
+    slug: string
+  }>
+}
 
 interface Product {
   id: string
@@ -67,9 +72,10 @@ interface ProductDetailData {
   relatedProducts: RelatedProduct[]
 }
 
-export default function ProductDetailPage() {
-  const params = useParams()
-  const slug = params.slug as string
+export default function ProductDetailPage({ params }: ProductDetailPageProps) {
+  // Unwrap params Promise using React.use()
+  const resolvedParams = use(params)
+  const slug = resolvedParams.slug
 
   const [data, setData] = useState<ProductDetailData | null>(null)
   const [loading, setLoading] = useState(true)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, use } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
@@ -12,9 +12,9 @@ import { Separator } from "@/components/ui/separator"
 import { ErrorComponent } from "@/components/layout/error"
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 interface Product {
@@ -53,6 +53,10 @@ interface CategoryData {
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
+  // Unwrap params Promise using React.use()
+  const resolvedParams = use(params)
+  const slug = resolvedParams.slug
+  
   const searchParams = useSearchParams()
   const [data, setData] = useState<CategoryData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -76,7 +80,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         ...(search && { search }),
       })
 
-      const response = await fetch(`/api/categories/${params.slug}?${queryParams}`)
+      const response = await fetch(`/api/categories/${slug}?${queryParams}`)
       const result = await response.json()
 
       if (!result.success) {
@@ -89,7 +93,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     } finally {
       setLoading(false)
     }
-  }, [params.slug, page, sort, search])
+  }, [slug, page, sort, search])
 
   useEffect(() => {
     fetchCategoryData()
