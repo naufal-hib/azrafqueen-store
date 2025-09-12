@@ -1,4 +1,3 @@
-// src/app/cart/page.tsx
 "use client"
 
 import { useState } from "react"
@@ -11,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useCartStore } from "@/store/cart-store"
+import { useCartStore, type CartItem, type CartSummary } from "@/store/cart-store"
 import { formatCurrency } from "@/lib/utils"
 
 export default function CartPage() {
@@ -140,7 +139,7 @@ function EmptyCartState() {
 
 // Cart Item Card Component
 interface CartItemCardProps {
-  item: any // CartItem from store
+  item: CartItem
   isUpdating: boolean
   onQuantityChange: (quantity: number) => void
   onRemove: () => void
@@ -223,7 +222,7 @@ function CartItemCard({ item, isUpdating, onQuantityChange, onRemove }: CartItem
             <div className="flex items-center justify-between">
               <div className="text-lg font-semibold">
                 {formatCurrency(unitPrice)}
-                {item.variant?.additionalPrice > 0 && (
+                {item.variant?.additionalPrice && item.variant.additionalPrice > 0 && (
                   <span className="text-sm text-muted-foreground ml-2">
                     (+{formatCurrency(item.variant.additionalPrice)})
                   </span>
@@ -279,7 +278,7 @@ function CartItemCard({ item, isUpdating, onQuantityChange, onRemove }: CartItem
 
 // Cart Summary Card Component
 interface CartSummaryCardProps {
-  cartSummary: any // CartSummary from store
+  cartSummary: CartSummary
 }
 
 function CartSummaryCard({ cartSummary }: CartSummaryCardProps) {

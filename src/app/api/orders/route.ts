@@ -1,8 +1,48 @@
-// src/app/api/orders/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { checkoutSchema } from '@/lib/checkout-schemas'
 import { OrderStatus, PaymentStatus } from '@prisma/client'
+
+// Types for request body
+interface CartItem {
+  productId: string
+  productName: string
+  variantId?: string
+  variantInfo?: string
+  quantity: number
+  price: number
+  subtotal: number
+}
+
+interface CustomerInfo {
+  name: string
+  email: string
+  phone: string
+}
+
+interface ShippingAddress {
+  name: string
+  phone: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  notes?: string
+}
+
+interface PaymentMethod {
+  method: string
+}
+
+interface OrderRequestBody {
+  customerInfo: CustomerInfo
+  shippingAddress: ShippingAddress
+  paymentMethod: PaymentMethod
+  items: CartItem[]
+  subtotal: number
+  shippingCost: number
+  totalAmount: number
+  notes?: string
+}
 
 // Helper function to generate order number
 function generateOrderNumber(): string {
@@ -17,7 +57,7 @@ function generateOrderNumber(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body: OrderRequestBody = await request.json()
     
     // Validate request body structure
     if (!body.customerInfo || !body.shippingAddress || !body.paymentMethod || !body.items) {
@@ -111,7 +151,7 @@ export async function POST(request: NextRequest) {
         paymentMethod: paymentMethodMap[body.paymentMethod.method] || 'Bank Transfer',
         notes: body.notes || null,
         items: {
-          create: body.items.map((item: any) => ({
+          create: body.items.map((item: CartItem) => ({
             productName: item.productName,
             variantInfo: item.variantInfo,
             quantity: item.quantity,
@@ -195,7 +235,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const whereClause: any = {}
+    const whereClause: {
+      orderNumber?: string
+      customerEmail?: string
+    } = {}
     
     if (orderNumber) {
       whereClause.orderNumber = orderNumber

@@ -1,4 +1,3 @@
-// src/app/checkout/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -10,7 +9,6 @@ import { ChevronRight, CreditCard, Lock, ArrowLeft } from "lucide-react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -19,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { useCartStore } from "@/store/cart-store"
+import { useCartStore, type CartItem, type CartSummary } from "@/store/cart-store"
 import { formatCurrency } from "@/lib/utils"
 import { 
   checkoutSchema, 
@@ -244,9 +242,9 @@ export default function CheckoutPage() {
                       checked={sameAsCustomer}
                       onCheckedChange={handleSameAsCustomer}
                     />
-                    <Label htmlFor="sameAsCustomer" className="text-sm font-medium">
+                    <label htmlFor="sameAsCustomer" className="text-sm font-medium">
                       Same as customer information
-                    </Label>
+                    </label>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,7 +392,7 @@ export default function CheckoutPage() {
                             {paymentMethods.map((method) => (
                               <div key={method.id} className="flex items-center space-x-3">
                                 <RadioGroupItem value={method.id} id={method.id} />
-                                <Label 
+                                <label 
                                   htmlFor={method.id} 
                                   className="flex-1 cursor-pointer border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                                 >
@@ -408,7 +406,7 @@ export default function CheckoutPage() {
                                       </div>
                                     </div>
                                   </div>
-                                </Label>
+                                </label>
                               </div>
                             ))}
                           </RadioGroup>
@@ -463,8 +461,8 @@ export default function CheckoutPage() {
 
 // Order Summary Component
 interface OrderSummaryCardProps {
-  items: any[] // CartItem[]
-  cartSummary: any // CartSummary
+  items: CartItem[]
+  cartSummary: CartSummary
   isSubmitting: boolean
 }
 

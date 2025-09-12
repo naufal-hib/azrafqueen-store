@@ -1,7 +1,6 @@
-// src/app/orders/page.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Search, Package, Eye, Clock, CheckCircle, XCircle } from "lucide-react"
@@ -44,14 +43,8 @@ export default function OrderHistoryPage() {
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(!!emailFromUrl)
 
-  // Auto-search if email from URL
-  useEffect(() => {
-    if (emailFromUrl) {
-      handleSearch(emailFromUrl)
-    }
-  }, [emailFromUrl])
-
-  const handleSearch = async (searchEmail?: string) => {
+  // Memoize handleSearch function untuk fix missing dependency
+  const handleSearch = useCallback(async (searchEmail?: string) => {
     const emailToSearch = searchEmail || email
     if (!emailToSearch.trim()) return
 
@@ -75,45 +68,18 @@ export default function OrderHistoryPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [email])
+
+  // Auto-search if email from URL
+  useEffect(() => {
+    if (emailFromUrl) {
+      handleSearch(emailFromUrl)
+    }
+  }, [emailFromUrl, handleSearch])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     handleSearch()
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PENDING': return <Clock className="h-4 w-4" />
-      case 'CONFIRMED': 
-      case 'PROCESSING': 
-      case 'SHIPPED': return <Package className="h-4 w-4" />
-      case 'DELIVERED': return <CheckCircle className="h-4 w-4" />
-      case 'CANCELLED': return <XCircle className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PENDING': return 'default'
-      case 'CONFIRMED': return 'secondary'
-      case 'PROCESSING': return 'secondary'
-      case 'SHIPPED': return 'default'
-      case 'DELIVERED': return 'secondary'
-      case 'CANCELLED': return 'destructive'
-      default: return 'default'
-    }
-  }
-
-  const getPaymentStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PENDING': return 'destructive'
-      case 'PAID': return 'secondary'
-      case 'FAILED': return 'destructive'
-      case 'REFUNDED': return 'secondary'
-      default: return 'default'
-    }
   }
 
   return (

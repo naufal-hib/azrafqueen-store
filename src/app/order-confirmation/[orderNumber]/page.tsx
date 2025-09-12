@@ -1,4 +1,3 @@
-// src/app/order-confirmation/[orderNumber]/page.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,15 +5,11 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import { 
   CheckCircle, 
-  Clock, 
-  Package, 
-  Truck, 
   CreditCard,
   MapPin,
   Phone,
   Mail,
-  Copy,
-  ExternalLink 
+  Copy
 } from "lucide-react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Button } from "@/components/ui/button"
@@ -41,13 +36,23 @@ interface OrderItem {
   }
 }
 
+interface ShippingAddress {
+  name: string
+  phone: string
+  address: string
+  city: string
+  province: string
+  postalCode: string
+  notes?: string
+}
+
 interface Order {
   id: string
   orderNumber: string
   customerName: string
   customerEmail: string
   customerPhone: string
-  shippingAddress: any
+  shippingAddress: ShippingAddress
   subtotal: number
   shippingCost: number
   totalAmount: number
