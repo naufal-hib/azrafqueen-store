@@ -137,7 +137,7 @@ export function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href="/admin">Admin Dashboard</Link>
+                <Link href="/admin/dashboard">Admin Dashboard</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
