@@ -1,36 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { Package, Plus, Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdminLayout } from "@/components/admin/admin-layout"
+import { useAdmin } from "@/hooks/use-admin"
 
 export default function AdminProductsPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
+  const { isLoading } = useAdmin()
 
-  useEffect(() => {
-    if (status === "loading") return
-
-    if (status === "unauthenticated") {
-      router.push("/admin/login")
-      return
-    }
-
-    if (session?.user?.role !== "ADMIN") {
-      router.push("/admin/login")
-      return
-    }
-
-    setLoading(false)
-  }, [session, status, router])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">

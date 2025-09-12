@@ -1,8 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { 
   Package, 
   ShoppingCart, 
@@ -16,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 import { AdminLayout } from "@/components/admin/admin-layout"
+import { useAdmin } from "@/hooks/use-admin"
 
 // Mock data - nanti akan diganti dengan data real dari database
 const mockStats = {
@@ -36,27 +34,9 @@ const mockStats = {
 }
 
 export default function AdminDashboardPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [loading, setLoading] = useState(true)
+  const { isLoading } = useAdmin()
 
-  useEffect(() => {
-    if (status === "loading") return
-
-    if (status === "unauthenticated") {
-      router.push("/admin/login")
-      return
-    }
-
-    if (session?.user?.role !== "ADMIN") {
-      router.push("/admin/login")
-      return
-    }
-
-    setLoading(false)
-  }, [session, status, router])
-
-  if (loading) {
+  if (isLoading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
