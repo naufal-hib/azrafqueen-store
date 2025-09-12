@@ -1,3 +1,57 @@
+// import { PrismaClient, UserRole } from '@prisma/client'
+// import bcrypt from 'bcryptjs'
+
+// const prisma = new PrismaClient()
+
+// async function main() {
+//   console.log('🌱 Seeding database...')
+
+//   // 1. Create Admin User dengan hashed password
+//   console.log('👤 Creating admin user...')
+  
+//   const adminEmail = process.env.ADMIN_EMAIL || 'admin@azrafqueen.com'
+//   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  
+//   // Hash password
+//   const hashedPassword = await bcrypt.hash(adminPassword, 12)
+  
+//   const adminUser = await prisma.user.upsert({
+//     where: { email: adminEmail },
+//     update: {
+//       password: hashedPassword, // Update password jika user sudah ada
+//     },
+//     create: {
+//       name: 'Admin Azrafqueen',
+//       email: adminEmail,
+//       password: hashedPassword,
+//       role: UserRole.ADMIN,
+//     },
+//   })
+
+//   console.log(`✅ Admin user created: ${adminUser.email}`)
+
+//   // ... rest of existing seed code (categories, products, etc.)
+//   // [Keep all existing code for categories and products]
+
+//   console.log('\n🎉 Database seeding completed!')
+//   console.log('==========================================')
+//   console.log(`👤 Admin Login:`)
+//   console.log(`📧 Email: ${adminEmail}`)
+//   console.log(`🔒 Password: ${adminPassword}`)
+//   console.log('==========================================')
+// }
+
+// main()
+//   .then(async () => {
+//     await prisma.$disconnect()
+//   })
+//   .catch(async (e) => {
+//     console.error('❌ Error seeding database:', e)
+//     await prisma.$disconnect()
+//     process.exit(1)
+//   })
+
+
 import { PrismaClient, UserRole } from '@prisma/client'
 
 const prisma = new PrismaClient()
