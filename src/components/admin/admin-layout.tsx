@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { signOut, useSession } from "next-auth/react"
+import { Toaster } from "sonner"
 
 // Navigation items untuk sidebar
 const navigationItems = [
@@ -70,6 +71,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toaster for notifications */}
+      <Toaster position="top-right" />
+      
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 

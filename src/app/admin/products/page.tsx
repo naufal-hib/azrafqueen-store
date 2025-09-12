@@ -18,6 +18,7 @@ import {
 import { AdminLayout } from "@/components/admin/admin-layout"
 import { useAdmin } from "@/hooks/use-admin"
 import { formatCurrency } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 interface Product {
   id: string
@@ -44,6 +45,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   // Fetch products from API
   useEffect(() => {
@@ -94,10 +96,10 @@ export default function AdminProductsPage() {
             <h1 className="text-2xl font-bold">Products Management</h1>
             <p className="text-muted-foreground">Manage your products, inventory, and pricing</p>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
+          <Button onClick={() => router.push('/admin/products/add')}>
+  <Plus className="h-4 w-4 mr-2" />
+  Add Product
+</Button>
         </div>
 
         {/* Search & Filter Bar */}
@@ -191,10 +193,10 @@ export default function AdminProductsPage() {
                   }
                 </p>
                 {!searchQuery && (
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add First Product
-                  </Button>
+                  <Button onClick={() => router.push('/admin/products/add')}>
+  <Plus className="h-4 w-4 mr-2" />
+  Add First Product
+</Button>
                 )}
               </div>
             ) : (
