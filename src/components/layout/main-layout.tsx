@@ -1,4 +1,4 @@
-import { Header } from "./header"
+import { DynamicHeader } from "./dynamic-header"
 import { Footer } from "./footer"
 
 interface MainLayoutProps {
@@ -8,7 +8,7 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <DynamicHeader />
       <main className="flex-1">
         {children}
       </main>

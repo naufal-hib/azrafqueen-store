@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12">
         
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           
           {/* Company Info */}
           <div className="space-y-4">
@@ -56,7 +56,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link 
-                  href="/category/abaya" 
+                  href="/products?category=abaya" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Abaya & Gamis
@@ -64,7 +64,7 @@ export function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/category/hijab" 
+                  href="/products?category=hijab" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Hijab & Kerudung
@@ -72,7 +72,7 @@ export function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/category/pashmina" 
+                  href="/products?category=pashmina" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Pashmina
@@ -80,7 +80,7 @@ export function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/category/buku-islam" 
+                  href="/products?category=buku-islam" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Buku & Al-Qur&apos;an
@@ -88,7 +88,7 @@ export function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/category/baju-anak" 
+                  href="/products?category=baju-anak" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Baju Muslim Anak
@@ -111,82 +111,20 @@ export function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/shipping" 
+                  href="/contact" 
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Info Pengiriman
+                  Hubungi Kami
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/returns" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Kebijakan Return
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/size-guide" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Panduan Ukuran
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/faq" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  FAQ
-                </Link>
+                <span className="text-muted-foreground cursor-not-allowed opacity-60">
+                  FAQ (Coming Soon)
+                </span>
               </li>
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Kontak Kami</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-start space-x-2">
-                <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                <span className="text-muted-foreground">
-                  Jl. Raya Islamic Centre No. 123<br />
-                  Jakarta Selatan 12345
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <Link 
-                  href="tel:+6281234567890"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  +62 812-3456-7890
-                </Link>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <Link 
-                  href="mailto:hello@azrafqueen.com"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  hello@azrafqueen.com
-                </Link>
-              </div>
-            </div>
-            
-            {/* Business Hours */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Jam Operasional
-              </h4>
-              <div className="text-sm text-muted-foreground">
-                <p>Senin - Jumat: 09:00 - 18:00</p>
-                <p>Sabtu: 09:00 - 15:00</p>
-                <p>Minggu: Tutup</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <Separator className="my-8" />
@@ -200,42 +138,20 @@ export function Footer() {
           {/* Footer Links */}
           <div className="flex flex-wrap gap-4 text-sm">
             <Link 
-              href="/privacy" 
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link 
-              href="/terms" 
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              Terms of Service
-            </Link>
-            <Link 
               href="/contact" 
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Contact Us
             </Link>
+            <span className="text-muted-foreground cursor-not-allowed opacity-60">
+              Privacy Policy (Coming Soon)
+            </span>
+            <span className="text-muted-foreground cursor-not-allowed opacity-60">
+              Terms of Service (Coming Soon)
+            </span>
           </div>
         </div>
 
-        {/* Payment Methods & Security */}
-        <Separator className="my-6" />
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground mb-2">
-            Metode Pembayaran yang Aman
-          </p>
-          <div className="flex justify-center items-center space-x-4 text-xs text-muted-foreground">
-            <span>Bank Transfer</span>
-            <span>•</span>
-            <span>QRIS</span>
-            <span>•</span>
-            <span>E-Wallet</span>
-            <span>•</span>
-            <span>Midtrans</span>
-          </div>
-        </div>
       </div>
     </footer>
   )

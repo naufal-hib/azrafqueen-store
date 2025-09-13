@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Playfair_Display, Inter, Amiri } from "next/font/google";
 import { SessionProvider } from "next-auth/react"
 import "./globals.css";
 
@@ -13,12 +13,32 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const amiri = Amiri({
+  variable: "--font-amiri",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Azrafqueen Store - Fashion Islami & Barang Religius",
-    template: "%s | Azrafqueen Store"
+    default: "Azraf Queen Store - Premium Islamic Fashion",
+    template: "%s | Azraf Queen Store"
   },
-  description: "Toko online terpercaya untuk fashion Islami berkualitas premium. Menyediakan abaya, hijab, pashmina, Al-Qur'an, dan perlengkapan ibadah untuk keluarga Muslim.",
+  description: "Toko online terpercaya untuk fashion muslimah berkualitas premium",
   keywords: [
     "abaya",
     "hijab", 
@@ -59,17 +79,19 @@ export const metadata: Metadata = {
     description: "Toko online terpercaya untuk fashion Islami berkualitas premium.",
     images: ["/images/og-image.jpg"], // TODO: Add this image
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+
   verification: {
     // TODO: Add verification codes when ready
     // google: "your-google-verification-code",
     // other: "your-other-verification-code",
   }
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+}
 
 export default function RootLayout({
   children,
@@ -79,7 +101,7 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} ${inter.variable} ${amiri.variable} antialiased`}
         suppressHydrationWarning
       >
         <SessionProvider>

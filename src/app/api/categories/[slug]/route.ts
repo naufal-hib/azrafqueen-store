@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
@@ -161,6 +162,171 @@ export async function GET(
         success: false, 
         error: 'Failed to fetch category products' 
       },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT /api/categories/[id] - Update category (Admin only)
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteParams
+) {
+  try {
+    // Check if user is authenticated and is admin
+    const session = await auth()
+    
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
+
+    const { slug: categoryId } = await params
+    
+    // Parse request body
+    const body = await request.json()
+    
+    // Validate required fields
+    if (!body.name || !body.slug) {
+      return NextResponse.json(
+        { success: false, error: 'Name and slug are required' },
+        { status: 400 }
+      )
+    }
+
+    // Check if category exists (using ID from slug param - assuming slug is actually ID for admin routes)
+    const existingCategory = await prisma.category.findUnique({
+      where: { id: categoryId }
+    })
+
+    if (!existingCategory) {
+      return NextResponse.json(
+        { success: false, error: 'Category not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check if slug is unique (excluding current category)
+    if (body.slug !== existingCategory.slug) {
+      const duplicateCategory = await prisma.category.findUnique({
+        where: { slug: body.slug }
+      })
+
+      if (duplicateCategory) {
+        return NextResponse.json(
+          { success: false, error: 'Category with this slug already exists' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Update category
+    const updatedCategory = await prisma.category.update({
+      where: { id: categoryId },
+      data: {
+        name: body.name,
+        slug: body.slug,
+        description: body.description || null,
+        isActive: body.isActive !== undefined ? body.isActive : existingCategory.isActive
+      },
+      include: {
+        _count: {
+          select: {
+            products: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: updatedCategory
+    })
+
+  } catch (error) {
+    console.error('Error updating category:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to update category' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/categories/[id] - Delete category (Admin only)
+export async function DELETE(
+  request: NextRequest,
+  { params }: RouteParams
+) {
+  try {
+    // Check if user is authenticated and is admin
+    const session = await auth()
+    
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
+
+    const { slug: categoryId } = await params
+
+    // Check if category exists (using ID from slug param)
+    const existingCategory = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        _count: {
+          select: {
+            products: true
+          }
+        }
+      }
+    })
+
+    if (!existingCategory) {
+      return NextResponse.json(
+        { success: false, error: 'Category not found' },
+        { status: 404 }
+      )
+    }
+
+    // Check if category has products
+    if (existingCategory._count.products > 0) {
+      return NextResponse.json(
+        { success: false, error: `Cannot delete category with ${existingCategory._count.products} products` },
+        { status: 400 }
+      )
+    }
+
+    // Delete category
+    await prisma.category.delete({
+      where: { id: categoryId }
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Category deleted successfully'
+    })
+
+  } catch (error) {
+    console.error('Error deleting category:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete category' },
       { status: 500 }
     )
   }

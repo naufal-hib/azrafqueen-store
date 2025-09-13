@@ -20,18 +20,29 @@ interface Category {
   name: string
 }
 
+interface ProductVariant {
+  id?: string
+  size: string
+  color: string
+  stock: number | string
+  additionalPrice: number | string
+  sku: string
+  isActive: boolean
+}
+
 interface ProductFormData {
   name: string
   slug: string
   description: string
-  price: number
-  discountPrice: number | null
-  stock: number
+  price: number | string
+  discountPrice: number | string | null
+  stock: number | string
   categoryId: string
   isActive: boolean
   isFeatured: boolean
   tags: string[]
   images: string[]
+  variants: ProductVariant[]
 }
 
 export default function AddProductPage() {
@@ -45,16 +56,18 @@ export default function AddProductPage() {
     name: '',
     slug: '',
     description: '',
-    price: 0,
+    price: '',
     discountPrice: null,
-    stock: 0,
+    stock: '',
     categoryId: '',
     isActive: true,
     isFeatured: false,
     tags: [],
-    images: []
+    images: [],
+    variants: []
   })
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([])
   const [slugError, setSlugError] = useState<string | null>(null)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -158,10 +171,9 @@ export default function AddProductPage() {
 
   // Handle price change
   const handlePriceChange = (value: string) => {
-    const price = Number(value)
     setFormData(prev => ({
       ...prev,
-      price
+      price: value
     }))
     
     // Clear error for price field
@@ -174,10 +186,9 @@ export default function AddProductPage() {
 
   // Handle discount price change
   const handleDiscountPriceChange = (value: string) => {
-    const discountPrice = value ? Number(value) : null
     setFormData(prev => ({
       ...prev,
-      discountPrice
+      discountPrice: value || null
     }))
     
     // Clear error for discountPrice field
@@ -190,10 +201,9 @@ export default function AddProductPage() {
 
   // Handle stock change
   const handleStockChange = (value: string) => {
-    const stock = Number(value)
     setFormData(prev => ({
       ...prev,
-      stock
+      stock: value
     }))
     
     // Clear error for stock field
@@ -227,55 +237,87 @@ export default function AddProductPage() {
     // Convert FileList to Array
     const fileList = Array.from(files)
     
-    // Check file types
-    const validFiles = fileList.filter(file => 
-      file.type.startsWith('image/')
-    )
+    // Check file types and size
+    const validFiles = fileList.filter(file => {
+      const isValidType = file.type.startsWith('image/')
+      const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB
+      return isValidType && isValidSize
+    })
     
     if (validFiles.length !== fileList.length) {
-      toast.error('Only image files are allowed')
+      toast.error('Some files were skipped. Only images under 10MB are allowed.')
+    }
+    
+    // Limit to 5 images total
+    const totalImages = newImageFiles.length + validFiles.length
+    if (totalImages > 5) {
+      toast.error('Maximum 5 images allowed in total')
       return
     }
     
-    // Limit to 5 images
-    if (validFiles.length > 5) {
-      toast.error('Maximum 5 images allowed')
-      return
-    }
-    
-    // Create previews
+    // Create previews for new files
     const previews = validFiles.map(file => URL.createObjectURL(file))
-    setImagePreviews(previews)
     
-    // Update form data with image file names (for now, we'll use placeholders)
-    setFormData(prev => ({
-      ...prev,
-      images: validFiles.map((_, index) => `image-${Date.now()}-${index}.jpg`)
-    }))
+    // Add to existing previews and files
+    setNewImageFiles(prev => [...prev, ...validFiles])
+    setImagePreviews(prev => [...prev, ...previews])
     
-    toast.success(`Selected ${validFiles.length} image(s)`)
+    // Clear input
+    e.target.value = ''
   }
 
   // Remove image preview
   const removeImage = (index: number) => {
-    const newPreviews = [...imagePreviews]
-    newPreviews.splice(index, 1)
-    setImagePreviews(newPreviews)
-    
-    const newImages = [...formData.images]
-    newImages.splice(index, 1)
-    setFormData(prev => ({
-      ...prev,
-      images: newImages
-    }))
-    
-    // Revoke object URL to free memory
+    // Clean up URL object
     URL.revokeObjectURL(imagePreviews[index])
+    
+    // Remove from previews and files
+    const newPreviews = [...imagePreviews]
+    const newFiles = [...newImageFiles]
+    newPreviews.splice(index, 1)
+    newFiles.splice(index, 1)
+    
+    setImagePreviews(newPreviews)
+    setNewImageFiles(newFiles)
   }
 
   // Trigger file input
   const triggerFileInput = () => {
     fileInputRef.current?.click()
+  }
+
+  // Add new variant
+  const addVariant = () => {
+    const newVariant: ProductVariant = {
+      size: '',
+      color: '',
+      stock: '',
+      additionalPrice: '',
+      sku: '',
+      isActive: true
+    }
+    setFormData(prev => ({
+      ...prev,
+      variants: [...prev.variants, newVariant]
+    }))
+  }
+
+  // Remove variant
+  const removeVariant = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index)
+    }))
+  }
+
+  // Update variant
+  const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.map((variant, i) => 
+        i === index ? { ...variant, [field]: value } : variant
+      )
+    }))
   }
 
   // Validate form
@@ -296,20 +338,20 @@ export default function AddProductPage() {
       errors.categoryId = 'Please select a category'
     }
     
-    if (formData.price <= 0) {
+    if (!formData.price || Number(formData.price) <= 0) {
       errors.price = 'Price must be greater than 0'
     }
     
-    if (formData.discountPrice !== null && formData.discountPrice <= 0) {
+    if (formData.discountPrice !== null && formData.discountPrice !== '' && Number(formData.discountPrice) <= 0) {
       errors.discountPrice = 'Discount price must be greater than 0 or empty'
     }
     
-    if (formData.discountPrice !== null && formData.discountPrice >= formData.price) {
+    if (formData.discountPrice !== null && formData.discountPrice !== '' && Number(formData.discountPrice) >= Number(formData.price)) {
       errors.discountPrice = 'Discount price must be less than regular price'
     }
     
-    if (formData.stock < 0) {
-      errors.stock = 'Stock cannot be negative'
+    if (!formData.stock || Number(formData.stock) < 0) {
+      errors.stock = 'Stock must be 0 or greater'
     }
     
     setFormErrors(errors)
@@ -329,12 +371,57 @@ export default function AddProductPage() {
     try {
       setLoading(true)
       
+      let finalFormData = { ...formData }
+      
+      // Upload images if any
+      if (newImageFiles.length > 0) {
+        const uploadFormData = new FormData()
+        newImageFiles.forEach(file => {
+          uploadFormData.append('files', file)
+        })
+
+        const uploadResponse = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: uploadFormData
+        })
+
+        const uploadResult = await uploadResponse.json()
+
+        if (uploadResult.success) {
+          // Set uploaded filenames to form data
+          finalFormData.images = uploadResult.data.files
+          toast.success(`Uploaded ${newImageFiles.length} image(s)`)
+          
+          // Clean up previews
+          imagePreviews.forEach(preview => URL.revokeObjectURL(preview))
+          setImagePreviews([])
+          setNewImageFiles([])
+        } else {
+          toast.error(`Failed to upload images: ${uploadResult.error}`)
+          setLoading(false)
+          return
+        }
+      }
+      
+      // Prepare data with proper types
+      const submitData = {
+        ...finalFormData,
+        price: Number(finalFormData.price),
+        discountPrice: finalFormData.discountPrice ? Number(finalFormData.discountPrice) : null,
+        stock: Number(finalFormData.stock),
+        variants: finalFormData.variants.map(variant => ({
+          ...variant,
+          stock: Number(variant.stock) || 0,
+          additionalPrice: Number(variant.additionalPrice) || 0
+        }))
+      }
+      
       const response = await fetch('/api/admin/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       })
 
       const result = await response.json()
@@ -469,7 +556,7 @@ export default function AddProductPage() {
                       type="number"
                       value={formData.price}
                       onChange={(e) => handlePriceChange(e.target.value)}
-                      placeholder="0"
+                      placeholder="Enter price"
                       min="0"
                       step="1000"
                       required
@@ -486,7 +573,7 @@ export default function AddProductPage() {
                       type="number"
                       value={formData.discountPrice || ''}
                       onChange={(e) => handleDiscountPriceChange(e.target.value)}
-                      placeholder="0"
+                      placeholder="Enter sale price"
                       min="0"
                       step="1000"
                       className={formErrors.discountPrice ? "border-red-500" : ""}
@@ -502,7 +589,7 @@ export default function AddProductPage() {
                       type="number"
                       value={formData.stock}
                       onChange={(e) => handleStockChange(e.target.value)}
-                      placeholder="0"
+                      placeholder="Enter stock quantity"
                       min="0"
                       required
                       className={formErrors.stock ? "border-red-500" : ""}
@@ -543,7 +630,14 @@ export default function AddProductPage() {
                     <p className="text-muted-foreground mb-4">
                       Drag & drop images here, or click to select files
                     </p>
-                    <Button variant="outline" type="button" onClick={(e) => e.stopPropagation()}>
+                    <Button 
+                      variant="outline" 
+                      type="button" 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        triggerFileInput()
+                      }}
+                    >
                       <Upload className="h-4 w-4 mr-2" />
                       Select Images
                     </Button>
@@ -554,28 +648,37 @@ export default function AddProductPage() {
 
                   {/* Image Previews */}
                   {imagePreviews.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative group">
-                          <img 
-                            src={preview} 
-                            alt={`Preview ${index + 1}`} 
-                            className="w-full h-32 object-cover rounded-lg border"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              removeImage(index)
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Images to Upload (Preview)</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={preview} 
+                              alt={`Preview ${index + 1}`} 
+                              className="w-full h-32 object-cover rounded-lg border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                removeImage(index)
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                            <div className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
+                              Preview
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        These images will be uploaded when you save the product.
+                      </p>
                     </div>
                   )}
 
@@ -641,7 +744,7 @@ export default function AddProductPage() {
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="no-categories" disabled>
                           No categories available
                         </SelectItem>
                       )}
@@ -654,6 +757,151 @@ export default function AddProductPage() {
                     Choose the appropriate category for this product
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Variants */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Product Variants</CardTitle>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        // Quick add common sizes
+                        const sizes = ['S', 'M', 'L', 'XL']
+                        sizes.forEach(size => {
+                          const newVariant: ProductVariant = {
+                            size,
+                            color: '',
+                            stock: '',
+                            additionalPrice: '',
+                            sku: '',
+                            isActive: true
+                          }
+                          setFormData(prev => ({
+                            ...prev,
+                            variants: [...prev.variants, newVariant]
+                          }))
+                        })
+                      }}
+                      disabled={formData.variants.length > 0}
+                    >
+                      Quick: Sizes (S-XL)
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      onClick={addVariant}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Variant
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription>
+                  Add different variations of your product. You can create variants with size only, color only, or both size and color combinations.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {formData.variants.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No variants added yet. Click "Add Variant" to create your first variant.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {formData.variants.map((variant, index) => (
+                      <div key={index} className="border rounded-lg p-4 bg-muted/50">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium">Variant {index + 1}</h4>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeVariant(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {/* Size */}
+                          <div className="space-y-2">
+                            <Label>Size (Optional)</Label>
+                            <Input
+                              placeholder="e.g. S, M, L, XL (leave blank if no size variants)"
+                              value={variant.size}
+                              onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                            />
+                          </div>
+                          
+                          {/* Color */}
+                          <div className="space-y-2">
+                            <Label>Color (Optional)</Label>
+                            <Input
+                              placeholder="e.g. Black, Navy, White (leave blank if no color variants)"
+                              value={variant.color}
+                              onChange={(e) => updateVariant(index, 'color', e.target.value)}
+                            />
+                          </div>
+                          
+                          {/* Stock */}
+                          <div className="space-y-2">
+                            <Label>Stock</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              placeholder="0"
+                              value={variant.stock}
+                              onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                            />
+                          </div>
+                          
+                          {/* Additional Price */}
+                          <div className="space-y-2">
+                            <Label>Additional Price</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              value={variant.additionalPrice}
+                              onChange={(e) => updateVariant(index, 'additionalPrice', e.target.value)}
+                            />
+                          </div>
+                          
+                          {/* SKU */}
+                          <div className="space-y-2">
+                            <Label>SKU (Optional)</Label>
+                            <Input
+                              placeholder="e.g. ABY-001-S-BLK"
+                              value={variant.sku}
+                              onChange={(e) => updateVariant(index, 'sku', e.target.value)}
+                            />
+                          </div>
+                          
+                          {/* Active Status */}
+                          <div className="space-y-2">
+                            <Label>Active Status</Label>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={variant.isActive}
+                                onCheckedChange={(checked) => updateVariant(index, 'isActive', checked)}
+                              />
+                              <span className="text-sm text-muted-foreground">
+                                {variant.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

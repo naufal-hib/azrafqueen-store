@@ -7,6 +7,7 @@ interface RouteParams {
   }>
 }
 
+// GET /api/products/[slug] - Get single product by slug
 export async function GET(
   request: NextRequest,
   { params }: RouteParams
@@ -14,18 +15,10 @@ export async function GET(
   try {
     const { slug } = await params
 
-    if (!slug) {
-      return NextResponse.json(
-        { success: false, error: 'Product slug is required' },
-        { status: 400 }
-      )
-    }
-
-    // Get product with full details
     const product = await prisma.product.findUnique({
-      where: {
-        slug,
-        isActive: true
+      where: { 
+        slug: slug,
+        isActive: true 
       },
       include: {
         category: {
@@ -33,11 +26,20 @@ export async function GET(
             id: true,
             name: true,
             slug: true,
-            description: true,
+            description: true
           }
         },
         variants: {
           where: { isActive: true },
+          select: {
+            id: true,
+            size: true,
+            color: true,
+            stock: true,
+            additionalPrice: true,
+            sku: true,
+            isActive: true
+          },
           orderBy: [
             { size: 'asc' },
             { color: 'asc' }
@@ -53,26 +55,33 @@ export async function GET(
       )
     }
 
-    // Get related products (same category, excluding current product)
+    // Get related products from the same category
     const relatedProducts = await prisma.product.findMany({
       where: {
+        isActive: true,
         categoryId: product.categoryId,
-        id: { not: product.id },
-        isActive: true
+        id: { not: product.id } // Exclude current product
       },
       include: {
         category: {
           select: {
-            id: true,
             name: true,
-            slug: true,
+            slug: true
+          }
+        },
+        variants: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            size: true,
+            color: true,
+            stock: true,
+            additionalPrice: true
           }
         }
       },
-      take: 4,
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { isFeatured: 'desc' },
+      take: 8 // Limit to 8 related products
     })
 
     return NextResponse.json({
@@ -84,12 +93,9 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('Error fetching product details:', error)
+    console.error('Error fetching product:', error)
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch product details' 
-      },
+      { success: false, error: 'Failed to fetch product' },
       { status: 500 }
     )
   }

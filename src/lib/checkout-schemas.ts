@@ -42,7 +42,7 @@ export const shippingAddressSchema = z.object({
 
 // Payment Method Schema
 export const paymentMethodSchema = z.object({
-  method: z.enum(["bank_transfer", "qris", "cod"], {
+  method: z.enum(["bank_transfer", "qris", "cod", "midtrans"], {
     required_error: "Please select a payment method",
   }),
   bankAccount: z.string().optional(),
@@ -118,6 +118,13 @@ export const paymentMethods = [
     name: "QRIS",
     description: "Scan QR code with any e-wallet",
     icon: "📱",
+    processingTime: "Instant verification",
+  },
+  {
+    id: "midtrans",
+    name: "Credit/Debit Card",
+    description: "Pay with credit or debit card via Midtrans",
+    icon: "💳",
     processingTime: "Instant verification",
   },
   {

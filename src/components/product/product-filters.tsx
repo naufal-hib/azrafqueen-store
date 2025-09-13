@@ -40,8 +40,8 @@ export function ProductFilters({
   gridCols = 4,
   onGridChange
 }: ProductFiltersProps) {
-  const [priceRange, setPriceRange] = useState<string>("")
-  const [availability, setAvailability] = useState<string>("")
+  const [priceRange, setPriceRange] = useState<string>("all")
+  const [availability, setAvailability] = useState<string>("all")
 
   const sortOptions = [
     { value: "newest", label: "Newest First" },
@@ -54,7 +54,7 @@ export function ProductFilters({
   ]
 
   const priceRanges = [
-    { value: "", label: "All Prices" },
+    { value: "all", label: "All Prices" },
     { value: "0-50000", label: "Under Rp 50,000" },
     { value: "50000-100000", label: "Rp 50,000 - Rp 100,000" },
     { value: "100000-250000", label: "Rp 100,000 - Rp 250,000" },
@@ -63,17 +63,17 @@ export function ProductFilters({
   ]
 
   const availabilityOptions = [
-    { value: "", label: "All Products" },
+    { value: "all", label: "All Products" },
     { value: "in-stock", label: "In Stock" },
     { value: "out-of-stock", label: "Out of Stock" },
     { value: "low-stock", label: "Low Stock (< 10)" },
   ]
 
-  const activeFiltersCount = [priceRange, availability].filter(Boolean).length
+  const activeFiltersCount = [priceRange, availability].filter(filter => filter !== "all").length
 
   const clearFilters = () => {
-    setPriceRange("")
-    setAvailability("")
+    setPriceRange("all")
+    setAvailability("all")
   }
 
   return (
@@ -157,11 +157,11 @@ export function ProductFilters({
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground">Active filters:</span>
           
-          {priceRange && (
+          {priceRange && priceRange !== "all" && (
             <Badge variant="secondary" className="gap-1">
               Price: {priceRanges.find(r => r.value === priceRange)?.label}
               <button
-                onClick={() => setPriceRange("")}
+                onClick={() => setPriceRange("all")}
                 className="ml-1 hover:text-destructive"
               >
                 ×
@@ -169,11 +169,11 @@ export function ProductFilters({
             </Badge>
           )}
           
-          {availability && (
+          {availability && availability !== "all" && (
             <Badge variant="secondary" className="gap-1">
               {availabilityOptions.find(a => a.value === availability)?.label}
               <button
-                onClick={() => setAvailability("")}
+                onClick={() => setAvailability("all")}
                 className="ml-1 hover:text-destructive"
               >
                 ×

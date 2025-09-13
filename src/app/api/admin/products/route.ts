@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth-options'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // POST /api/admin/products - Create a new product
 export async function POST(request: NextRequest) {
   try {
     // Check if user is authenticated and is admin
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session) {
       return NextResponse.json(
@@ -58,25 +57,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create product
-    const product = await prisma.product.create({
-      data: {
-        name: body.name,
-        slug: body.slug,
-        description: body.description || '',
-        price: body.price,
-        discountPrice: body.discountPrice || null,
-        stock: body.stock || 0,
-        categoryId: body.categoryId,
-        isActive: body.isActive !== undefined ? body.isActive : true,
-        isFeatured: body.isFeatured || false,
-        images: body.images || []
+    // Create product with variants
+    const result = await prisma.$transaction(async (tx) => {
+      // Create product
+      const product = await tx.product.create({
+        data: {
+          name: body.name,
+          slug: body.slug,
+          description: body.description || '',
+          price: body.price,
+          discountPrice: body.discountPrice || null,
+          stock: body.stock || 0,
+          categoryId: body.categoryId,
+          isActive: body.isActive !== undefined ? body.isActive : true,
+          isFeatured: body.isFeatured || false,
+          images: body.images || []
+        }
+      })
+
+      // Create variants if provided
+      if (body.variants && Array.isArray(body.variants) && body.variants.length > 0) {
+        const variants = await Promise.all(
+          body.variants.map((variant: any) => {
+            return tx.productVariant.create({
+              data: {
+                productId: product.id,
+                size: variant.size || null,
+                color: variant.color || null,
+                stock: Number(variant.stock) || 0,
+                additionalPrice: Number(variant.additionalPrice) || 0,
+                sku: variant.sku || null,
+                isActive: variant.isActive !== undefined ? variant.isActive : true
+              }
+            })
+          })
+        )
+
+        return {
+          ...product,
+          variants
+        }
       }
+
+      return product
     })
 
     return NextResponse.json({
       success: true,
-      data: product
+      data: result
     })
 
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { OrderStatus, PaymentStatus } from '@prisma/client'
+import midtransClient from 'midtrans-client'
 
 // Types for request body
 interface CartItem {
@@ -54,6 +55,13 @@ function generateOrderNumber(): string {
   
   return `ORD-${year}${month}${day}-${timestamp}`
 }
+
+// Initialize Midtrans client
+const snap = new midtransClient.Snap({
+  isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+  clientKey: process.env.MIDTRANS_CLIENT_KEY
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -124,7 +132,8 @@ export async function POST(request: NextRequest) {
     const paymentMethodMap: Record<string, string> = {
       'bank_transfer': 'Bank Transfer',
       'qris': 'QRIS',
-      'cod': 'Cash on Delivery'
+      'cod': 'Cash on Delivery',
+      'midtrans': 'Credit/Debit Card (Midtrans)'
     }
 
     // Create order
@@ -147,7 +156,7 @@ export async function POST(request: NextRequest) {
         shippingCost: body.shippingCost,
         totalAmount: body.totalAmount,
         status: OrderStatus.PENDING,
-        paymentStatus: PaymentStatus.PENDING,
+        paymentStatus: body.paymentMethod.method === 'midtrans' ? PaymentStatus.PENDING : PaymentStatus.PENDING,
         paymentMethod: paymentMethodMap[body.paymentMethod.method] || 'Bank Transfer',
         notes: body.notes || null,
         items: {
@@ -197,6 +206,57 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // If payment method is Midtrans, create Snap transaction
+    let snapRedirectUrl: string | null = null
+    if (body.paymentMethod.method === 'midtrans') {
+      try {
+        const parameter = {
+          transaction_details: {
+            order_id: order.orderNumber,
+            gross_amount: order.totalAmount,
+          },
+          customer_details: {
+            first_name: body.customerInfo.name.split(' ')[0],
+            last_name: body.customerInfo.name.split(' ').slice(1).join(' ') || '-',
+            email: body.customerInfo.email,
+            phone: body.customerInfo.phone,
+            billing_address: {
+              first_name: body.shippingAddress.name.split(' ')[0],
+              last_name: body.shippingAddress.name.split(' ').slice(1).join(' ') || '-',
+              email: body.customerInfo.email,
+              phone: body.shippingAddress.phone,
+              address: body.shippingAddress.address,
+              city: body.shippingAddress.city,
+              postal_code: body.shippingAddress.postalCode,
+              country_code: 'IDN'
+            },
+            shipping_address: {
+              first_name: body.shippingAddress.name.split(' ')[0],
+              last_name: body.shippingAddress.name.split(' ').slice(1).join(' ') || '-',
+              email: body.customerInfo.email,
+              phone: body.shippingAddress.phone,
+              address: body.shippingAddress.address,
+              city: body.shippingAddress.city,
+              postal_code: body.shippingAddress.postalCode,
+              country_code: 'IDN'
+            }
+          },
+          item_details: body.items.map(item => ({
+            id: item.productId,
+            price: item.price,
+            quantity: item.quantity,
+            name: item.productName
+          }))
+        }
+
+        const transaction = await snap.createTransaction(parameter)
+        snapRedirectUrl = transaction.redirect_url
+      } catch (snapError) {
+        console.error('Error creating Midtrans transaction:', snapError)
+        // Even if Snap transaction fails, we still return the order
+      }
+    }
+
     // Return success response
     return NextResponse.json({
       success: true,
@@ -206,7 +266,8 @@ export async function POST(request: NextRequest) {
         totalAmount: order.totalAmount,
         paymentMethod: order.paymentMethod,
         status: order.status,
-        paymentStatus: order.paymentStatus
+        paymentStatus: order.paymentStatus,
+        snapRedirectUrl // This will be null if not using Midtrans or if creation failed
       }
     })
 

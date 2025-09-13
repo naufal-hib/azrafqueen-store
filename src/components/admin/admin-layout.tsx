@@ -84,7 +84,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        "fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
@@ -161,7 +161,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:ml-64">
         {/* Top header untuk mobile */}
         <header className="bg-white shadow-sm border-b lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
@@ -181,6 +181,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </div>
 
             <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/">View Store</Link>
+              </Button>
               <Button variant="ghost" size="icon">
                 <Bell className="h-4 w-4" />
               </Button>

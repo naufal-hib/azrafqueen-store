@@ -5,8 +5,46 @@ import { useState } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+
+// Helper function to validate and format image URLs
+const isValidImageUrl = (url: string): boolean => {
+  if (!url || typeof url !== 'string') return false
+  
+  // Check if it's a relative path or absolute URL
+  if (url.startsWith('/') || url.startsWith('http')) {
+    return url.match(/\.(jpeg|jpg|gif|png|svg|webp|bmp|ico)(\?.*)?$/i) !== null
+  }
+  
+  // For absolute URLs, try URL constructor
+  try {
+    new URL(url)
+    return url.match(/\.(jpeg|jpg|gif|png|svg|webp|bmp|ico)(\?.*)?$/i) !== null
+  } catch {
+    return false
+  }
+}
+
+const formatImageUrl = (image: string): string => {
+  // If it's already a valid URL with protocol, return as is
+  if (image?.startsWith('http')) {
+    return image
+  }
+  
+  // If it's already a valid relative path, return as is
+  if (image?.startsWith('/')) {
+    return image
+  }
+  
+  // If it's just a filename, assume it's in the uploads folder
+  if (image && typeof image === 'string' && image.includes('.')) {
+    return `/uploads/${image}`
+  }
+  
+  // Fallback to placeholder
+  return '/images/placeholder-product.svg'
+}
 
 interface ProductImageGalleryProps {
   images: string[]
@@ -21,8 +59,10 @@ export function ProductImageGallery({
 }: ProductImageGalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   
-  // Fallback jika tidak ada images
-  const displayImages = images.length > 0 ? images : ['/images/placeholder-product.jpg']
+  // Process and format images with fallback
+  const displayImages = images.length > 0 
+    ? images.map(formatImageUrl)
+    : ['/images/placeholder-product.svg']
   const currentImage = displayImages[currentImageIndex]
 
   const goToPrevious = () => {
@@ -52,6 +92,10 @@ export function ProductImageGallery({
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
           priority
+          onError={(e) => {
+            // Fallback to placeholder if image fails to load
+            e.currentTarget.src = '/images/placeholder-product.svg'
+          }}
         />
         
         {/* Navigation Arrows - Show only if multiple images */}
@@ -92,6 +136,9 @@ export function ProductImageGallery({
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl w-full">
+            <DialogHeader>
+              <DialogTitle>{productName} - Full Size Image</DialogTitle>
+            </DialogHeader>
             <div className="relative aspect-square w-full">
               <Image
                 src={currentImage}
@@ -99,6 +146,9 @@ export function ProductImageGallery({
                 fill
                 className="object-contain"
                 sizes="(max-width: 1200px) 100vw, 1200px"
+                onError={(e) => {
+                  e.currentTarget.src = '/images/placeholder-product.svg'
+                }}
               />
             </div>
           </DialogContent>
@@ -132,6 +182,9 @@ export function ProductImageGallery({
                 fill
                 className="object-cover"
                 sizes="64px"
+                onError={(e) => {
+                  e.currentTarget.src = '/images/placeholder-product.svg'
+                }}
               />
             </button>
           ))}

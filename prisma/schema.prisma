@@ -167,6 +167,43 @@ model OrderItem {
   @@map("order_items")
 }
 
+model StoreSettings {
+  id           String   @id @default(cuid())
+  storeName    String   @default("Azraf Queen Store")
+  storeSlogan  String?  @default("Premium Islamic Fashion & Lifestyle")
+  storeLogo    String?  // URL to logo image
+  storeEmail   String?  @default("info@azrafqueen.com")
+  storePhone   String?  @default("+62 812-3456-7890")
+  storeAddress String?  @default("Jakarta, Indonesia")
+  
+  // Social media links
+  instagramUrl String?
+  facebookUrl  String?
+  tiktokUrl    String?
+  whatsappUrl  String?
+  
+  // Store policies
+  returnPolicy    String? @db.Text
+  shippingPolicy  String? @db.Text
+  privacyPolicy   String? @db.Text
+  termsOfService  String? @db.Text
+  
+  // SEO settings
+  metaTitle       String? @default("Azraf Queen Store - Premium Islamic Fashion")
+  metaDescription String? @default("Toko online terpercaya untuk fashion muslimah berkualitas premium")
+  metaKeywords    String? @default("fashion muslimah, abaya, hijab, gamis, busana muslim")
+  
+  // Business settings
+  currency        String  @default("IDR")
+  timeZone        String  @default("Asia/Jakarta")
+  isMaintenanceMode Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("store_settings")
+}
+
 // NextAuth required models
 model Account {
   id                String  @id @default(cuid())

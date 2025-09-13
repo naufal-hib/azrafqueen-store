@@ -262,6 +262,28 @@ export default function OrderConfirmationPage() {
               </Alert>
             )}
 
+            {order.paymentStatus === 'PENDING' && order.paymentMethod.includes('Midtrans') && (
+              <Alert>
+                <CreditCard className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold">Credit/Debit Card Payment</h4>
+                    <p>You will be redirected to our secure payment gateway to complete your payment.</p>
+                    <Button 
+                      onClick={() => window.location.reload()} 
+                      variant="default" 
+                      className="mt-2"
+                    >
+                      Retry Payment
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      If you are not automatically redirected, please click the button above.
+                    </p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Order Items */}
             <Card>
               <CardHeader>

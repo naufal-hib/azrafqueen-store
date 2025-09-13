@@ -23,12 +23,14 @@ interface Product {
 interface AddToCartButtonProps {
   product: Product
   selectedVariant: ProductVariant | null
+  hasVariants?: boolean // Whether product has variants available
   className?: string
 }
 
 export function AddToCartButton({ 
   product, 
   selectedVariant,
+  hasVariants = false,
   className 
 }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(1)
@@ -49,12 +51,11 @@ export function AddToCartButton({
     ? product.price + selectedVariant.additionalPrice 
     : product.price
   
+  // For products with variants, require variant selection
+  const requiresVariantSelection = hasVariants && !selectedVariant
+  
   // Check if product can be added to cart
-  const canAddToCart = availableStock > 0 && quantity > 0 && quantity <= availableStock
-
-  // For products with variants, require variant selection if variants exist
-  const hasVariants = selectedVariant !== undefined // undefined means we haven't checked yet, null means no variants
-  const requiresVariantSelection = hasVariants === undefined // Still loading variants
+  const canAddToCart = availableStock > 0 && quantity > 0 && quantity <= availableStock && !requiresVariantSelection
   
   const handleQuantityChange = (newQuantity: number) => {
     const clampedQuantity = Math.max(1, Math.min(newQuantity, maxQuantity))

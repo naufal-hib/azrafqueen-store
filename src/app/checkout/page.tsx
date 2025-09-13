@@ -120,9 +120,15 @@ export default function CheckoutPage() {
       const result = await response.json()
 
       if (result.success) {
-        // Clear cart and redirect to success page
+        // Clear cart and redirect to success page or Midtrans payment page
         clearCart()
-        router.push(`/order-confirmation/${result.data.orderNumber}`)
+        
+        // If this is a Midtrans payment, redirect to the payment page
+        if (data.paymentMethod.method === 'midtrans' && result.data.snapRedirectUrl) {
+          window.location.href = result.data.snapRedirectUrl
+        } else {
+          router.push(`/order-confirmation/${result.data.orderNumber}`)
+        }
       } else {
         throw new Error(result.error || 'Failed to create order')
       }

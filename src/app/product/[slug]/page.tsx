@@ -161,7 +161,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </Link>
           <ChevronRight className="h-4 w-4" />
           <Link 
-            href={`/category/${product.category.slug}`}
+            href={`/products?category=${product.category.slug}`}
             className="hover:text-primary transition-colors"
           >
             {product.category.name}
@@ -245,6 +245,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <AddToCartButton
               product={product}
               selectedVariant={selectedVariant}
+              hasVariants={product.variants.length > 0}
             />
 
             {/* Action Buttons */}
@@ -358,7 +359,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Related Products</h2>
               <Button variant="outline" asChild>
-                <Link href={`/category/${product.category.slug}`}>
+                <Link href={`/products?category=${product.category.slug}`}>
                   View All
                 </Link>
               </Button>

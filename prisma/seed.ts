@@ -1,58 +1,5 @@
-// import { PrismaClient, UserRole } from '@prisma/client'
-// import bcrypt from 'bcryptjs'
-
-// const prisma = new PrismaClient()
-
-// async function main() {
-//   console.log('🌱 Seeding database...')
-
-//   // 1. Create Admin User dengan hashed password
-//   console.log('👤 Creating admin user...')
-  
-//   const adminEmail = process.env.ADMIN_EMAIL || 'admin@azrafqueen.com'
-//   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-  
-//   // Hash password
-//   const hashedPassword = await bcrypt.hash(adminPassword, 12)
-  
-//   const adminUser = await prisma.user.upsert({
-//     where: { email: adminEmail },
-//     update: {
-//       password: hashedPassword, // Update password jika user sudah ada
-//     },
-//     create: {
-//       name: 'Admin Azrafqueen',
-//       email: adminEmail,
-//       password: hashedPassword,
-//       role: UserRole.ADMIN,
-//     },
-//   })
-
-//   console.log(`✅ Admin user created: ${adminUser.email}`)
-
-//   // ... rest of existing seed code (categories, products, etc.)
-//   // [Keep all existing code for categories and products]
-
-//   console.log('\n🎉 Database seeding completed!')
-//   console.log('==========================================')
-//   console.log(`👤 Admin Login:`)
-//   console.log(`📧 Email: ${adminEmail}`)
-//   console.log(`🔒 Password: ${adminPassword}`)
-//   console.log('==========================================')
-// }
-
-// main()
-//   .then(async () => {
-//     await prisma.$disconnect()
-//   })
-//   .catch(async (e) => {
-//     console.error('❌ Error seeding database:', e)
-//     await prisma.$disconnect()
-//     process.exit(1)
-//   })
-
-
 import { PrismaClient, UserRole } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -122,32 +69,38 @@ async function main() {
   // 2. Create Admin User
   console.log('👤 Creating admin user...')
   
+  const adminEmail = 'admin@azrafqueen.com'
+  const adminPassword = 'admin123'
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
+  
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@azrafqueen.com' },
-    update: {},
+    where: { email: adminEmail },
+    update: {
+      password: hashedPassword,
+    },
     create: {
       name: 'Admin Azrafqueen',
-      email: 'admin@azrafqueen.com',
-      password: '$2a$10$example-hashed-password', // In real app, hash this!
+      email: adminEmail,
+      password: hashedPassword,
       role: UserRole.ADMIN,
     },
   })
-  // Suppress unused variable warning for seed file
-  void adminUser
 
-  console.log('✅ Admin user created')
+  console.log('✅ Admin user created/updated')
 
-  // 3. Create Sample Products
+  // 3. Create Sample Products (Simple version)
   console.log('📦 Creating sample products...')
 
   // Abaya Products
-  const abaya1 = await prisma.product.create({
-    data: {
+  const abaya1 = await prisma.product.upsert({
+    where: { slug: 'abaya-dubai-premium-hitam' },
+    update: {},
+    create: {
       name: 'Abaya Dubai Premium Hitam',
       description: 'Abaya premium dengan bahan berkualitas tinggi, cocok untuk acara formal maupun sehari-hari. Desain elegan dengan detail bordir yang indah.',
       price: 350000,
       discountPrice: 299000,
-      images: ['/images/products/abaya-1.jpg', '/images/products/abaya-1-detail.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'abaya-dubai-premium-hitam',
       stock: 50,
       weight: 500,
@@ -156,21 +109,23 @@ async function main() {
       categoryId: abayaCategory.id,
       variants: {
         create: [
-          { size: 'S', stock: 10, additionalPrice: 0, sku: 'ABY-DUB-HIT-S' },
-          { size: 'M', stock: 15, additionalPrice: 0, sku: 'ABY-DUB-HIT-M' },
-          { size: 'L', stock: 15, additionalPrice: 0, sku: 'ABY-DUB-HIT-L' },
-          { size: 'XL', stock: 10, additionalPrice: 0, sku: 'ABY-DUB-HIT-XL' },
+          { size: 'S', stock: 10, additionalPrice: 0, sku: 'ABY-DUB-HIT-S', isActive: true },
+          { size: 'M', stock: 15, additionalPrice: 0, sku: 'ABY-DUB-HIT-M', isActive: true },
+          { size: 'L', stock: 15, additionalPrice: 0, sku: 'ABY-DUB-HIT-L', isActive: true },
+          { size: 'XL', stock: 10, additionalPrice: 0, sku: 'ABY-DUB-HIT-XL', isActive: true },
         ],
       },
     },
   })
 
-  const abaya2 = await prisma.product.create({
-    data: {
+  const abaya2 = await prisma.product.upsert({
+    where: { slug: 'gamis-syari-polos-navy' },
+    update: {},
+    create: {
       name: 'Gamis Syari Polos Navy',
       description: 'Gamis syari dengan bahan katun premium, nyaman dipakai sehari-hari. Tersedia dalam warna navy yang elegan.',
       price: 275000,
-      images: ['/images/products/gamis-navy.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'gamis-syari-polos-navy',
       stock: 30,
       weight: 400,
@@ -179,24 +134,24 @@ async function main() {
       categoryId: abayaCategory.id,
       variants: {
         create: [
-          { size: 'S', stock: 8, additionalPrice: 0, sku: 'GAM-SYR-NAV-S' },
-          { size: 'M', stock: 10, additionalPrice: 0, sku: 'GAM-SYR-NAV-M' },
-          { size: 'L', stock: 12, additionalPrice: 0, sku: 'GAM-SYR-NAV-L' },
+          { size: 'S', stock: 8, additionalPrice: 0, sku: 'GAM-SYR-NAV-S', isActive: true },
+          { size: 'M', stock: 10, additionalPrice: 0, sku: 'GAM-SYR-NAV-M', isActive: true },
+          { size: 'L', stock: 12, additionalPrice: 0, sku: 'GAM-SYR-NAV-L', isActive: true },
         ],
       },
     },
   })
-  // Suppress unused variable warning for seed file
-  void abaya2
 
   // Hijab Products
-  const hijab1 = await prisma.product.create({
-    data: {
+  const hijab1 = await prisma.product.upsert({
+    where: { slug: 'hijab-segiempat-voal-premium' },
+    update: {},
+    create: {
       name: 'Hijab Segiempat Voal Premium',
       description: 'Hijab segiempat dengan bahan voal premium yang ringan dan adem. Tersedia dalam berbagai warna cantik.',
       price: 65000,
       discountPrice: 55000,
-      images: ['/images/products/hijab-voal.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'hijab-segiempat-voal-premium',
       stock: 100,
       weight: 50,
@@ -205,22 +160,24 @@ async function main() {
       categoryId: hijabCategory.id,
       variants: {
         create: [
-          { color: 'Hitam', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-HIT' },
-          { color: 'Navy', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-NAV' },
-          { color: 'Maroon', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-MAR' },
-          { color: 'Abu-abu', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-ABU' },
+          { color: 'Hitam', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-HIT', isActive: true },
+          { color: 'Navy', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-NAV', isActive: true },
+          { color: 'Maroon', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-MAR', isActive: true },
+          { color: 'Abu-abu', stock: 25, additionalPrice: 0, sku: 'HIJ-VOA-ABU', isActive: true },
         ],
       },
     },
   })
 
   // Pashmina Product
-  const pashmina1 = await prisma.product.create({
-    data: {
+  const pashmina1 = await prisma.product.upsert({
+    where: { slug: 'pashmina-crinkle-gradasi' },
+    update: {},
+    create: {
       name: 'Pashmina Crinkle Gradasi',
       description: 'Pashmina dengan tekstur crinkle dan gradasi warna yang indah. Cocok untuk berbagai occasion.',
       price: 89000,
-      images: ['/images/products/pashmina-crinkle.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'pashmina-crinkle-gradasi',
       stock: 75,
       weight: 80,
@@ -229,23 +186,23 @@ async function main() {
       categoryId: pashinaCategory.id,
       variants: {
         create: [
-          { color: 'Pink Gradasi', stock: 25, additionalPrice: 0, sku: 'PAS-CRI-PIN' },
-          { color: 'Blue Gradasi', stock: 25, additionalPrice: 0, sku: 'PAS-CRI-BLU' },
-          { color: 'Purple Gradasi', stock: 25, additionalPrice: 0, sku: 'PAS-CRI-PUR' },
+          { color: 'Pink Gradasi', stock: 25, additionalPrice: 0, sku: 'PAS-CRI-PIN', isActive: true },
+          { color: 'Blue Gradasi', stock: 25, additionalPrice: 0, sku: 'PAS-CRI-BLU', isActive: true },
+          { color: 'Purple Gradasi', stock: 25, additionalPrice: 0, sku: 'PAS-CRI-PUR', isActive: true },
         ],
       },
     },
   })
-  // Suppress unused variable warning for seed file
-  void pashmina1
 
   // Buku Products
-  const quran1 = await prisma.product.create({
-    data: {
+  const quran1 = await prisma.product.upsert({
+    where: { slug: 'al-quran-tajwid-terjemahan' },
+    update: {},
+    create: {
       name: 'Al-Qur\'an Tajwid & Terjemahan',
       description: 'Al-Qur\'an dengan panduan tajwid lengkap dan terjemahan Bahasa Indonesia. Kertas berkualitas tinggi.',
       price: 125000,
-      images: ['/images/products/quran-tajwid.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'al-quran-tajwid-terjemahan',
       stock: 40,
       weight: 800,
@@ -254,15 +211,15 @@ async function main() {
       categoryId: bukuCategory.id,
     },
   })
-  // Suppress unused variable warning for seed file
-  void quran1
 
-  const bukuDoa = await prisma.product.create({
-    data: {
+  const bukuDoa = await prisma.product.upsert({
+    where: { slug: 'buku-doa-sehari-hari' },
+    update: {},
+    create: {
       name: 'Buku Doa Sehari-hari',
       description: 'Kumpulan doa-doa pilihan untuk kehidupan sehari-hari, lengkap dengan terjemahan dan manfaatnya.',
       price: 45000,
-      images: ['/images/products/buku-doa.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'buku-doa-sehari-hari',
       stock: 60,
       weight: 200,
@@ -271,16 +228,16 @@ async function main() {
       categoryId: bukuCategory.id,
     },
   })
-  // Suppress unused variable warning for seed file
-  void bukuDoa
 
   // Baju Anak
-  const bajuAnak1 = await prisma.product.create({
-    data: {
+  const bajuAnak1 = await prisma.product.upsert({
+    where: { slug: 'baju-koko-anak-premium' },
+    update: {},
+    create: {
       name: 'Baju Koko Anak Premium',
       description: 'Baju koko untuk anak dengan bahan katun premium, nyaman dan cocok untuk acara formal.',
       price: 89000,
-      images: ['/images/products/koko-anak.jpg'],
+      images: ['/images/placeholder-product.svg'],
       slug: 'baju-koko-anak-premium',
       stock: 45,
       weight: 150,
@@ -289,24 +246,24 @@ async function main() {
       categoryId: anakCategory.id,
       variants: {
         create: [
-          { size: '1-2 Tahun', stock: 10, additionalPrice: 0, sku: 'KOK-ANK-1-2' },
-          { size: '3-4 Tahun', stock: 15, additionalPrice: 0, sku: 'KOK-ANK-3-4' },
-          { size: '5-6 Tahun', stock: 15, additionalPrice: 0, sku: 'KOK-ANK-5-6' },
-          { size: '7-8 Tahun', stock: 5, additionalPrice: 0, sku: 'KOK-ANK-7-8' },
+          { size: '1-2 Tahun', stock: 10, additionalPrice: 0, sku: 'KOK-ANK-1-2', isActive: true },
+          { size: '3-4 Tahun', stock: 15, additionalPrice: 0, sku: 'KOK-ANK-3-4', isActive: true },
+          { size: '5-6 Tahun', stock: 15, additionalPrice: 0, sku: 'KOK-ANK-5-6', isActive: true },
+          { size: '7-8 Tahun', stock: 5, additionalPrice: 0, sku: 'KOK-ANK-7-8', isActive: true },
         ],
       },
     },
   })
-  // Suppress unused variable warning for seed file
-  void bajuAnak1
 
   console.log('✅ Sample products created')
 
   // 4. Create Sample Order (for testing)
   console.log('🛍️ Creating sample order...')
   
-  const sampleOrder = await prisma.order.create({
-    data: {
+  const sampleOrder = await prisma.order.upsert({
+    where: { orderNumber: 'ORD-2024-001' },
+    update: {},
+    create: {
       orderNumber: 'ORD-2024-001',
       customerName: 'Siti Aisyah',
       customerEmail: 'siti.aisyah@email.com',
@@ -347,8 +304,6 @@ async function main() {
       },
     },
   })
-  // Suppress unused variable warning for seed file
-  void sampleOrder
 
   console.log('✅ Sample order created')
 
@@ -365,7 +320,7 @@ async function main() {
   
   console.log('\n🎉 Database is ready for development!')
   console.log('📧 Admin login: admin@azrafqueen.com')
-  console.log('🔒 Password: (will setup in authentication)')
+  console.log('🔒 Password: admin123')
 }
 
 main()

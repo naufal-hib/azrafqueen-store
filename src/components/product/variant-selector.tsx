@@ -33,6 +33,8 @@ export function VariantSelector({
   className 
 }: VariantSelectorProps) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  const [selectedSize, setSelectedSize] = useState<string>('')
+  const [selectedColor, setSelectedColor] = useState<string>('')
 
   // Group variants by type
   const sizes = Array.from(new Set(
@@ -53,9 +55,9 @@ export function VariantSelector({
       if (!variant.isActive) return false
       
       if (filterBy === 'size') {
-        return variant.size === value && (!selectedVariant?.color || variant.color === selectedVariant.color)
+        return variant.size === value && (!selectedColor || variant.color === selectedColor)
       } else {
-        return variant.color === value && (!selectedVariant?.size || variant.size === selectedVariant.size)
+        return variant.color === value && (!selectedSize || variant.size === selectedSize)
       }
     })
   }
@@ -71,46 +73,60 @@ export function VariantSelector({
 
   // Handle size selection
   const handleSizeSelect = (size: string) => {
-    const availableColors = colors.filter(color => 
-      getAvailableVariants('color', color).length > 0
-    )
-
-    let newVariant: ProductVariant | null = null
-
-    if (selectedVariant?.color && availableColors.includes(selectedVariant.color)) {
-      // Keep current color if available
-      newVariant = findExactVariant(size, selectedVariant.color) || null
-    } else if (availableColors.length > 0) {
-      // Select first available color
-      newVariant = findExactVariant(size, availableColors[0]) || null
-    } else {
-      // No colors available, find size-only variant
-      newVariant = variants.find(v => v.isActive && v.size === size && !v.color) || null
+    // Toggle selection if clicking the same size
+    if (selectedSize === size) {
+      setSelectedSize('')
+      setSelectedVariant(null)
+      return
     }
-
-    setSelectedVariant(newVariant)
+    
+    setSelectedSize(size)
+    
+    // If there are colors available, wait for color selection
+    if (colors.length > 0) {
+      if (selectedColor) {
+        const exactVariant = findExactVariant(size, selectedColor)
+        setSelectedVariant(exactVariant || null)
+      } else {
+        // Colors exist but none selected yet
+        setSelectedVariant(null)
+      }
+    } else {
+      // No colors exist, this is a size-only product
+      const sizeOnlyVariant = variants.find(v => 
+        v.isActive && v.size === size && (!v.color || v.color === '')
+      )
+      setSelectedVariant(sizeOnlyVariant || null)
+    }
   }
 
   // Handle color selection
   const handleColorSelect = (color: string) => {
-    const availableSizes = sizes.filter(size => 
-      getAvailableVariants('size', size).length > 0
-    )
-
-    let newVariant: ProductVariant | null = null
-
-    if (selectedVariant?.size && availableSizes.includes(selectedVariant.size)) {
-      // Keep current size if available
-      newVariant = findExactVariant(selectedVariant.size, color) || null
-    } else if (availableSizes.length > 0) {
-      // Select first available size
-      newVariant = findExactVariant(availableSizes[0], color) || null
-    } else {
-      // No sizes available, find color-only variant
-      newVariant = variants.find(v => v.isActive && v.color === color && !v.size) || null
+    // Toggle selection if clicking the same color
+    if (selectedColor === color) {
+      setSelectedColor('')
+      setSelectedVariant(null)
+      return
     }
-
-    setSelectedVariant(newVariant)
+    
+    setSelectedColor(color)
+    
+    // If there are sizes available, wait for size selection
+    if (sizes.length > 0) {
+      if (selectedSize) {
+        const exactVariant = findExactVariant(selectedSize, color)
+        setSelectedVariant(exactVariant || null)
+      } else {
+        // Sizes exist but none selected yet
+        setSelectedVariant(null)
+      }
+    } else {
+      // No sizes exist, this is a color-only product
+      const colorOnlyVariant = variants.find(v => 
+        v.isActive && v.color === color && (!v.size || v.size === '')
+      )
+      setSelectedVariant(colorOnlyVariant || null)
+    }
   }
 
   // Calculate final price
@@ -123,6 +139,23 @@ export function VariantSelector({
     onVariantChange(selectedVariant, finalPrice)
   }, [selectedVariant, finalPrice, onVariantChange])
 
+  // Reset selections when variants change
+  useEffect(() => {
+    setSelectedVariant(null)
+    setSelectedSize('')
+    setSelectedColor('')
+  }, [variants])
+
+  // Clear all selections
+  const clearSelections = () => {
+    setSelectedSize('')
+    setSelectedColor('')
+    setSelectedVariant(null)
+  }
+
+  // Check if any selection has been made
+  const hasAnySelection = selectedSize || selectedColor
+
   // If no variants or all inactive, don't show selector
   if (variants.length === 0 || !variants.some(v => v.isActive)) {
     return null
@@ -130,6 +163,25 @@ export function VariantSelector({
 
   return (
     <div className={cn("space-y-6", className)}>
+      {/* Header with Clear Button */}
+      {hasAnySelection && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {selectedSize && `Size: ${selectedSize}`}
+            {selectedSize && selectedColor && ' • '}
+            {selectedColor && `Color: ${selectedColor}`}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearSelections}
+            className="text-xs h-6 px-2"
+          >
+            Clear Selection
+          </Button>
+        </div>
+      )}
+
       {/* Size Selector */}
       {sizes.length > 0 && (
         <div className="space-y-3">
@@ -137,7 +189,7 @@ export function VariantSelector({
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
               const availableVariants = getAvailableVariants('size', size)
-              const isSelected = selectedVariant?.size === size
+              const isSelected = selectedSize === size
               const isAvailable = availableVariants.length > 0 && 
                 availableVariants.some(v => v.stock > 0)
               const isOutOfStock = availableVariants.length > 0 && 
@@ -178,7 +230,7 @@ export function VariantSelector({
           <div className="flex flex-wrap gap-2">
             {colors.map((color) => {
               const availableVariants = getAvailableVariants('color', color)
-              const isSelected = selectedVariant?.color === color
+              const isSelected = selectedColor === color
               const isAvailable = availableVariants.length > 0 && 
                 availableVariants.some(v => v.stock > 0)
               const isOutOfStock = availableVariants.length > 0 && 
@@ -211,6 +263,7 @@ export function VariantSelector({
           </div>
         </div>
       )}
+
 
       {/* Selected Variant Info */}
       {selectedVariant && (
@@ -248,9 +301,25 @@ export function VariantSelector({
       )}
 
       {/* No Variant Selected Message */}
-      {(sizes.length > 0 || colors.length > 0) && !selectedVariant && (
+      {!selectedVariant && !hasAnySelection && (sizes.length > 0 || colors.length > 0) && (
         <div className="p-4 bg-muted/30 rounded-lg text-center text-sm text-muted-foreground">
-          Please select {sizes.length > 0 ? 'size' : ''}{sizes.length > 0 && colors.length > 0 ? ' and ' : ''}{colors.length > 0 ? 'color' : ''} to continue
+          <p className="font-medium mb-1">Please select your options:</p>
+          <p>
+            {sizes.length > 0 && `Choose ${sizes.length > 1 ? `from ${sizes.length} sizes` : 'size'}`}
+            {sizes.length > 0 && colors.length > 0 && ' and '}
+            {colors.length > 0 && `choose ${colors.length > 1 ? `from ${colors.length} colors` : 'color'}`}
+          </p>
+        </div>
+      )}
+
+      {/* Incomplete Selection Message */}
+      {!selectedVariant && hasAnySelection && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-center text-sm text-amber-700">
+          <p className="font-medium mb-1">Almost there!</p>
+          <p>
+            {selectedSize && !selectedColor && colors.length > 0 && 'Please select a color to continue'}
+            {selectedColor && !selectedSize && sizes.length > 0 && 'Please select a size to continue'}
+          </p>
         </div>
       )}
     </div>

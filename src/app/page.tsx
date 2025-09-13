@@ -85,32 +85,55 @@ export default function HomePage() {
   return (
     <MainLayout>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary/10 to-primary/5 py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative bg-gradient-to-br from-primary/8 via-background to-secondary/10 py-20 overflow-hidden">
+        {/* Decorative Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-10 left-10 w-32 h-32 rounded-full border-2 border-primary/20"></div>
+          <div className="absolute top-40 right-20 w-24 h-24 rounded-full border border-primary/15"></div>
+          <div className="absolute bottom-20 left-1/4 w-20 h-20 rounded-full border border-primary/10"></div>
+          <div className="absolute bottom-32 right-10 w-28 h-28 rounded-full border-2 border-primary/20"></div>
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="space-y-6">
-              <Badge variant="secondary" className="w-fit">
-                ✨ Fashion Islami Terpercaya
+              <Badge variant="secondary" className="w-fit bg-gradient-to-r from-primary/10 to-primary/5 text-primary border-primary/20 font-elegant-body">
+                🌙 Fashion Islami Terpercaya
               </Badge>
-              <h1 className="text-4xl font-bold tracking-tight lg:text-6xl">
-                Koleksi Fashion Islami
-                <span className="text-primary"> Premium</span>
+              <h1 className="text-4xl lg:text-6xl xl:text-7xl font-elegant-heading font-bold tracking-tight leading-[1.1] mb-2">
+                <span className="hero-title">Koleksi Fashion</span>
+                <br />
+                <span className="hero-title">Islami Premium</span>
               </h1>
-              <p className="text-xl text-muted-foreground lg:text-2xl">
+              <p className="text-xl lg:text-2xl xl:text-3xl font-elegant-body hero-subtitle text-muted-foreground/90 max-w-2xl leading-relaxed">
                 Temukan abaya, hijab, pashmina, dan perlengkapan ibadah berkualitas tinggi 
-                untuk gaya hidup Islami yang elegan dan syari.
+                untuk gaya hidup Islami yang <em className="font-arabic text-primary/80 not-italic">elegan</em> dan syari.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Button size="lg" asChild>
-                  <Link href="/category/abaya">
-                    <ShoppingBag className="mr-2 h-5 w-5" />
+              <div className="flex flex-col gap-4 sm:flex-row relative z-20 mt-8">
+                <Button 
+                  size="lg" 
+                  asChild 
+                  className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer font-elegant-body font-medium text-base px-8 py-4 h-auto"
+                >
+                  <Link 
+                    href="/products" 
+                    className="inline-flex items-center justify-center text-center no-underline cursor-pointer"
+                  >
+                    <ShoppingBag className="mr-3 h-5 w-5" />
                     Belanja Sekarang
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <Link href="/category">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  asChild 
+                  className="border-primary/30 hover:bg-primary/5 hover:border-primary/50 transition-all duration-300 cursor-pointer font-elegant-body font-medium text-base px-8 py-4 h-auto"
+                >
+                  <Link 
+                    href="/products" 
+                    className="inline-flex items-center justify-center text-center no-underline cursor-pointer"
+                  >
                     Lihat Kategori
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-3 h-5 w-5" />
                   </Link>
                 </Button>
               </div>
@@ -171,8 +194,8 @@ export default function HomePage() {
 
           {featuredProducts.length > 0 && (
             <div className="text-center">
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/category">
+              <Button variant="outline" size="lg" asChild className="hover:bg-primary/5 hover:border-primary/50 transition-all duration-300">
+                <Link href="/products" className="inline-flex items-center">
                   Lihat Semua Produk
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -231,7 +254,7 @@ export default function HomePage() {
                         }
                       </span>
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/category/${category.slug}`}>
+                        <Link href={`/products?category=${category.slug}`}>
                           Lihat Semua
                           <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
@@ -305,14 +328,16 @@ export default function HomePage() {
                   Daftar newsletter untuk mendapat info promo dan produk terbaru.
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-                  <Button size="lg" variant="secondary" asChild>
-                    <Link href="/category">
+                  <Button size="lg" variant="secondary" asChild className="hover:bg-white/90 transition-all duration-300">
+                    <Link href="/products" className="inline-flex items-center">
                       Jelajahi Produk
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
-                    Hubungi Kami
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary transition-all duration-300" asChild>
+                    <Link href="/contact" className="inline-flex items-center">
+                      Hubungi Kami
+                    </Link>
                   </Button>
                 </div>
               </div>
